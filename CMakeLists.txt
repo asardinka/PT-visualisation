@@ -62,4 +62,3 @@ target_link_options(PhasePortrait PRIVATE
     -static-libgcc
     -static-libstdc++
 )
-# SFML DLL для динамической сборки копирует run-debug.ps1 в build\Debug (как раньше run.ps1).

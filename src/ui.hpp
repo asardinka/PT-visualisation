@@ -21,29 +21,39 @@ inline void drawUI(UIState& ui, OdeSystem& sys) {
     ImGui::Begin("Phase Portrait");
 
     // ── Equations ────────────────────────────────────────────────────────
+    ImGui::AlignTextToFramePadding();
     ImGui::Text("dx/dt =");
-    ImGui::SetNextItemWidth(-1);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     ImGui::InputText("##f", ui.bufF, sizeof(ui.bufF));
 
+    ImGui::AlignTextToFramePadding();
     ImGui::Text("dy/dt =");
-    ImGui::SetNextItemWidth(-1);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     ImGui::InputText("##g", ui.bufG, sizeof(ui.bufG));
 
     ImGui::TextDisabled("Tip: use * for multiply (x*y)");
 
     // ── Initial point ─────────────────────────────────────────────────────
     ImGui::Spacing();
-    ImGui::Text("Initial point:");
-    ImGui::SetNextItemWidth(115);
-    ImGui::InputDouble("x0", &ui.x0, 0.1);
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("x0:");
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(115);
-    ImGui::InputDouble("y0", &ui.y0, 0.1);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::InputDouble("##x0", &ui.x0, 0.1, 0.0, "%.2f");
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("y0:");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::InputDouble("##y0", &ui.y0, 0.1, 0.0, "%.2f");
 
     // ── Speed ─────────────────────────────────────────────────────────────
     ImGui::Spacing();
+    ImGui::AlignTextToFramePadding();
     ImGui::Text("Speed:");
-    ImGui::SetNextItemWidth(-1);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     ImGui::SliderFloat("##speed", &ui.speed, 0.1f, 10.f);
 
     // ── Buttons ───────────────────────────────────────────────────────────

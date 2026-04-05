@@ -1,5 +1,3 @@
-#include <algorithm>
-#include <utility>
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include <imgui.h>
@@ -28,7 +26,6 @@ int main() {
 
     canvas.init(window.getSize());
 
-    // Build default system on startup
     sys.compile(ui.bufF, ui.bufG);
     sys.solve();
     sys.integrate(ui.x0, ui.y0, 0.01, 5000, trajectoryMaxWorldStep(canvas.zoom));
@@ -41,7 +38,6 @@ int main() {
     sf::Clock clock;
     while (window.isOpen()) {
 
-        // ── Events ───────────────────────────────────────────────────────
         while (auto event = window.pollEvent()) {
             ImGui::SFML::ProcessEvent(window, *event);
             canvas.handleEvent(*event);
@@ -58,7 +54,6 @@ int main() {
             }
         }
 
-        // ── Logic ────────────────────────────────────────────────────────
         if (ui.buildPressed) {
             if (sys.compile(ui.bufF, ui.bufG)) {
                 sys.solve();
@@ -93,10 +88,7 @@ int main() {
                 tx = ui.x0;
                 ty = ui.y0;
             }
-            const double playDt =
-                0.01 * static_cast<double>(ui.speed)
-                * static_cast<double>(
-                    std::clamp(50.f / canvas.zoom, 0.04f, 2.5f));
+            const double playDt = 0.01 * static_cast<double>(ui.speed);
             auto [nx, ny] = sys.step(tx, ty, t, playDt);
             tx = nx; ty = ny;
             t += playDt;
@@ -104,7 +96,6 @@ int main() {
         }
         wasPlaying = ui.playing;
 
-        // ── Render ───────────────────────────────────────────────────────
         window.clear(sf::Color(20, 20, 20));
         canvas.drawGrid(window);
         canvas.drawVectorField(window, sys);

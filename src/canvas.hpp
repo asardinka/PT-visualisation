@@ -1,12 +1,15 @@
 #pragma once
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <SFML/Graphics.hpp>
 #include <imgui.h>
 #include "odeSystem.hpp"
 
 struct Canvas {
+    static constexpr float kMinPxPerWorld = 1e-4f;
+    static constexpr float kMaxPxPerWorld = 1e6f;
+
     float zoom = 50.0f;
     sf::Vector2f offset;
     sf::Vector2u windowSize;
@@ -49,6 +52,7 @@ public:
     void init(sf::Vector2u size) {
         windowSize = size;
         offset = { size.x / 2.0f, size.y / 2.0f };
+        zoom     = std::clamp(zoom, kMinPxPerWorld, kMaxPxPerWorld);
     }
 
     void resize(sf::Vector2u size) {
@@ -75,11 +79,18 @@ public:
         if (ImGui::GetIO().WantCaptureMouse) return;
 
         if (const auto* scroll = event.getIf<sf::Event::MouseWheelScrolled>()) {
-            float factor = scroll->delta > 0 ? 1.1f : 0.9f;
-            sf::Vector2f mouse(static_cast<float>(scroll->position.x),
-                               static_cast<float>(scroll->position.y));
-            offset = mouse + (offset - mouse) * factor;
-            zoom  *= factor;
+            constexpr float kStepPerDelta = 1.1f;
+            float           d             = std::clamp(scroll->delta, -30.f, 30.f);
+            float           mult          = std::pow(kStepPerDelta, d);
+            sf::Vector2f    mouse(static_cast<float>(scroll->position.x),
+                                  static_cast<float>(scroll->position.y));
+            float oldZ = zoom;
+            float newZ = std::clamp(oldZ * mult, kMinPxPerWorld, kMaxPxPerWorld);
+            if (newZ == oldZ)
+                return;
+            float scale = newZ / oldZ;
+            offset      = mouse + (offset - mouse) * scale;
+            zoom        = newZ;
         }
         if (const auto* press = event.getIf<sf::Event::MouseButtonPressed>()) {
             if (press->button == sf::Mouse::Button::Left) {

@@ -20,6 +20,7 @@ struct OdeSystem::Impl {
         symbol_table.add_variable("y", _y);
         symbol_table.add_variable("t", _t);
         symbol_table.add_constants();
+        symbol_table.add_constant("e", exp(1.0));
 
         expr_f.register_symbol_table(symbol_table);
         expr_g.register_symbol_table(symbol_table);
@@ -96,17 +97,17 @@ pair<double,double> OdeSystem::step(double x, double y, double t, double dt) { r
 void OdeSystem::integrate(double x0, double y0, double dt, int steps, double maxWorldStep) {
     trajectory.clear();
     if (maxWorldStep > 0)
-        steps = std::max(steps, 20000);
+        steps = max(steps, 20000);
     double x = x0, y = y0, t = 0;
     for (int i = 0; i < steps; i++) {
         trajectory.push_back({x, y});
         double stepDt = dt;
         if (maxWorldStep > 0) {
             auto [fx, fy] = impl->eval(x, y, t);
-            double speed = std::hypot(fx, fy);
+            double speed = hypot(fx, fy);
             if (speed > 1e-12)
-                stepDt = std::min(stepDt, maxWorldStep / speed);
-            stepDt = std::max(stepDt, 1e-10);
+                stepDt = min(stepDt, maxWorldStep / speed);
+            stepDt = max(stepDt, 1e-10);
         }
         auto [nx, ny] = impl->step(x, y, t, stepDt);
         x = nx;
