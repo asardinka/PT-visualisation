@@ -1,0 +1,52 @@
+# --- CMake / компиляция ---
+/build/
+/build-*/
+/build-result/
+/out/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+/Makefile
+*.ninja
+.ninja_*
+/compile_commands.json
+
+# --- Локальные бинарники у корня репозитория (не libs/) ---
+/Release/
+/*.exe
+/*.dll
+
+# --- ImGui (раскладка окон на машине пользователя) ---
+imgui.ini
+**/imgui.ini
+
+# --- MSVC / Visual Studio ---
+/.vs/
+*.user
+*.userosscache
+*.VC.db
+*.VC.opendb
+*.suo
+*.sln.docstates
+x64/
+x86/
+*.ilk
+*.pdb
+*.idb
+*.opendb
+
+# --- Другое ---
+CMakeUserPresets.json
+.vscode/*.log
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+.cache/
+
+libs/
+
+*ps1

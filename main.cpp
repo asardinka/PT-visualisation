@@ -1,0 +1,127 @@
+#include <algorithm>
+#include <utility>
+#include <vector>
+#include <SFML/Graphics.hpp>
+#include <imgui.h>
+#include <imgui-SFML.h>
+
+#include "src/odeSystem.hpp"
+#include "src/canvas.hpp"
+#include "src/ui.hpp"
+
+namespace {
+constexpr float kTrajSegPx = 3.5f;
+
+inline double trajectoryMaxWorldStep(float zoom) {
+    return static_cast<double>(kTrajSegPx) / static_cast<double>(zoom);
+}
+} // namespace
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode({ 1200, 800 }), "Phase Portrait");
+    window.setFramerateLimit(60);
+    (void)ImGui::SFML::Init(window);
+
+    OdeSystem sys;
+    Canvas    canvas;
+    UIState   ui;
+
+    canvas.init(window.getSize());
+
+    // Build default system on startup
+    sys.compile(ui.bufF, ui.bufG);
+    sys.solve();
+    sys.integrate(ui.x0, ui.y0, 0.01, 5000, trajectoryMaxWorldStep(canvas.zoom));
+    std::vector<std::pair<double, double>> trajectoryDisplay = sys.trajectory;
+
+    double tx = ui.x0, ty = ui.y0, t = 0.0;
+    float  lastTrajZoom = canvas.zoom;
+    bool   wasPlaying   = false;
+
+    sf::Clock clock;
+    while (window.isOpen()) {
+
+        // ── Events ───────────────────────────────────────────────────────
+        while (auto event = window.pollEvent()) {
+            ImGui::SFML::ProcessEvent(window, *event);
+            canvas.handleEvent(*event);
+
+            if (event->is<sf::Event::Closed>())
+                window.close();
+
+            if (const auto* r = event->getIf<sf::Event::Resized>()) {
+                sf::FloatRect area({ 0, 0 },
+                    { static_cast<float>(r->size.x),
+                      static_cast<float>(r->size.y) });
+                window.setView(sf::View(area));
+                canvas.resize(r->size);
+            }
+        }
+
+        // ── Logic ────────────────────────────────────────────────────────
+        if (ui.buildPressed) {
+            if (sys.compile(ui.bufF, ui.bufG)) {
+                sys.solve();
+                ui.playing = false;
+                tx = ui.x0; ty = ui.y0; t = 0.0;
+                sys.integrate(tx, ty, 0.01, 5000, trajectoryMaxWorldStep(canvas.zoom));
+                trajectoryDisplay = sys.trajectory;
+                lastTrajZoom = canvas.zoom;
+                ui.errorMsg.clear();
+            } else {
+                ui.errorMsg = "Parse error!";
+            }
+            ui.buildPressed = false;
+        }
+
+        if (!ui.playing && sys.valid()) {
+            const float z = canvas.zoom;
+            if (z > lastTrajZoom * 1.08f || z < lastTrajZoom / 1.08f) {
+                sys.integrate(ui.x0, ui.y0, 0.01, 5000, trajectoryMaxWorldStep(z));
+                trajectoryDisplay = sys.trajectory;
+                tx = ui.x0;
+                ty = ui.y0;
+                t  = 0.0;
+                lastTrajZoom = z;
+            }
+        }
+
+        if (ui.playing && sys.valid()) {
+            if (!wasPlaying && t == 0.0) {
+                sys.trajectory.clear();
+                sys.trajectory.push_back({ ui.x0, ui.y0 });
+                tx = ui.x0;
+                ty = ui.y0;
+            }
+            const double playDt =
+                0.01 * static_cast<double>(ui.speed)
+                * static_cast<double>(
+                    std::clamp(50.f / canvas.zoom, 0.04f, 2.5f));
+            auto [nx, ny] = sys.step(tx, ty, t, playDt);
+            tx = nx; ty = ny;
+            t += playDt;
+            sys.trajectory.push_back({ tx, ty });
+        }
+        wasPlaying = ui.playing;
+
+        // ── Render ───────────────────────────────────────────────────────
+        window.clear(sf::Color(20, 20, 20));
+        canvas.drawGrid(window);
+        canvas.drawVectorField(window, sys);
+        if (ui.showTrajectory)
+            canvas.drawTrajectory(window, trajectoryDisplay);
+        canvas.drawEquilibria(window, sys);
+        if (sys.valid())
+            canvas.drawPhaseMarker(window, tx, ty);
+
+        ImGui::SFML::Update(window, clock.restart());
+        canvas.drawGridLabels();
+        drawUI(ui, sys);
+        ImGui::SFML::Render(window);
+
+        window.display();
+    }
+
+    ImGui::SFML::Shutdown();
+    return 0;
+}
