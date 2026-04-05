@@ -58,7 +58,13 @@ target_link_libraries(PhasePortrait PRIVATE
     opengl32
 )
 
-target_link_options(PhasePortrait PRIVATE
-    -static-libgcc
-    -static-libstdc++
-)
+# Портативный Release: полностью статический MinGW-рантайм (в т.ч. winpthread), иначе на чужом ПК
+# часто «Точка входа clock_gettime64 не найдена» — символ тянулся из DLL, которых там нет / другая UCRT.
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND PORTABLE_STATIC_SFML)
+    target_link_options(PhasePortrait PRIVATE -static -pthread)
+else()
+    target_link_options(PhasePortrait PRIVATE
+        -static-libgcc
+        -static-libstdc++
+    )
+endif()
