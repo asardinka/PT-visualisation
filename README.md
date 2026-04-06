@@ -41,10 +41,10 @@
 | ----------------------------- | -------------------------------------------------------------------------------- |
 | `.\run.ps1`                   | Сборка в `build/Debug` (динамический SFML), копирование `sfml-*.dll`, запуск     |
 | `.\run.ps1 -Configure`        | То же, но заново вызывает CMake                                                  |
-| `.\run.ps1 -RunOnly`          | Только запуск уже собранного `build/Debug\PhasePortrait.exe`                     |
+| `.\run.ps1 -RunOnly`          | Только запуск уже собранного `build/Debug/PhasePortrait.exe`                     |
 | `.\run.ps1 -Release`          | Сборка в `build/Release`, статический SFML, готовый exe для переноса (x64)       |
 | `.\run.ps1 -Release -Run`     | После релиз-сборки запустить exe                                                 |
-| `.\run.ps1 -Release -RunOnly` | Только запуск `build/Release\PhasePortrait.exe`                                  |
+| `.\run.ps1 -Release -RunOnly` | Только запуск `build/Release/PhasePortrait.exe`                                  |
 
 
 Первый полный проход компиляции `**odeSystem.cpp**` (exprtk) может занять несколько минут; дальше — инкрементально.
