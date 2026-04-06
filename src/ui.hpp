@@ -6,8 +6,8 @@
 struct UIState {
     char   bufF[256] = "x-x*y";
     char   bufG[256] = "x*y-y";
-    double x0        = 0.75;
-    double y0        = 0.75;
+    double x0        = 0.8;
+    double y0        = 0.8;
     float  speed     = 1.f;
     bool   playing      = false;
     bool   buildPressed = false;
@@ -41,12 +41,12 @@ inline void drawUI(UIState& ui, OdeSystem& sys) {
     ImGui::Text("x0:");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    ImGui::InputDouble("##x0", &ui.x0, 0.1, 0.0, "%.2f");
+    ImGui::InputDouble("##x0", &ui.x0, 0.1, 0.0, "%.4f");
     ImGui::AlignTextToFramePadding();
     ImGui::Text("y0:");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    ImGui::InputDouble("##y0", &ui.y0, 0.1, 0.0, "%.2f");
+    ImGui::InputDouble("##y0", &ui.y0, 0.1, 0.0, "%.4f");
 
     // ── Speed ─────────────────────────────────────────────────────────────
     ImGui::Spacing();
