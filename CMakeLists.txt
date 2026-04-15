@@ -25,7 +25,7 @@ set(IMGUI_SOURCES
 
 add_executable(PhasePortrait
     main.cpp
-    src/odeSystem.cpp
+    src/expr.cpp
     ${IMGUI_SOURCES}
 )
 
@@ -45,9 +45,9 @@ target_compile_definitions(PhasePortrait PRIVATE
 )
 
 target_compile_options(PhasePortrait PRIVATE -O2 -ffunction-sections -fdata-sections)
-# Только odeSystem.cpp тянет exprtk (огромный .obj); big-obj не нужен для main/imgui
+# Только expr.cpp тянет exprtk (огромный .obj); big-obj не нужен для main/imgui
 if(MINGW OR (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
-    set_source_files_properties(src/odeSystem.cpp PROPERTIES COMPILE_OPTIONS "-Wa,-mbig-obj")
+    set_source_files_properties(src/expr.cpp PROPERTIES COMPILE_OPTIONS "-Wa,-mbig-obj")
 endif()
 target_link_options(PhasePortrait PRIVATE -Wl,--gc-sections)
 

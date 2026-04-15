@@ -7,18 +7,11 @@
 #include "src/canvas.hpp"
 #include "src/ui.hpp"
 
-namespace {
-constexpr float kTrajSegPx = 3.5f;
-
-inline double trajectoryMaxWorldStep(float zoom) {
-    return static_cast<double>(kTrajSegPx) / static_cast<double>(zoom);
-}
-} // namespace
-
 int main() {
     sf::RenderWindow window(sf::VideoMode({ 1200, 800 }), "Phase Portrait");
     window.setFramerateLimit(60);
     (void)ImGui::SFML::Init(window);
+    ImGui::GetIO().IniFilename = nullptr;
 
     OdeSystem sys;
     Canvas    canvas;
@@ -28,7 +21,8 @@ int main() {
 
     sys.compile(ui.bufF, ui.bufG);
     sys.solve();
-    sys.integrate(ui.x0, ui.y0, 0.01, 5000, trajectoryMaxWorldStep(canvas.zoom));
+    sys.integrate(ui.x0, ui.y0, 0.01, 5000,
+        static_cast<double>(3.5f) / static_cast<double>(canvas.zoom));
     std::vector<std::pair<double, double>> trajectoryDisplay = sys.trajectory;
 
     double tx = ui.x0, ty = ui.y0, t = 0.0;
@@ -59,7 +53,8 @@ int main() {
                 sys.solve();
                 ui.playing = false;
                 tx = ui.x0; ty = ui.y0; t = 0.0;
-                sys.integrate(tx, ty, 0.01, 5000, trajectoryMaxWorldStep(canvas.zoom));
+                sys.integrate(tx, ty, 0.01, 5000,
+                    static_cast<double>(3.5f) / static_cast<double>(canvas.zoom));
                 trajectoryDisplay = sys.trajectory;
                 lastTrajZoom = canvas.zoom;
                 ui.errorMsg.clear();
@@ -72,7 +67,8 @@ int main() {
         if (!ui.playing && sys.valid()) {
             const float z = canvas.zoom;
             if (z > lastTrajZoom * 1.08f || z < lastTrajZoom / 1.08f) {
-                sys.integrate(ui.x0, ui.y0, 0.01, 5000, trajectoryMaxWorldStep(z));
+                sys.integrate(ui.x0, ui.y0, 0.01, 5000,
+                    static_cast<double>(3.5f) / static_cast<double>(z));
                 trajectoryDisplay = sys.trajectory;
                 tx = ui.x0;
                 ty = ui.y0;
