@@ -15,7 +15,7 @@ struct Canvas {
     sf::Vector2u windowSize;
 
 private:
-    bool         dragging  = false;
+    bool dragging  = false;
     sf::Vector2i lastMouse;
 
     struct GridGeom {
@@ -31,9 +31,9 @@ private:
         while (gridPx > 80.f) gridPx /= 2.f;
 
         const double gpx = static_cast<double>(gridPx);
-        const double ox  = static_cast<double>(offset.x);
-        const double oy  = static_cast<double>(offset.y);
-        const double z   = static_cast<double>(zoom);
+        const double ox = static_cast<double>(offset.x);
+        const double oy = static_cast<double>(offset.y);
+        const double z = static_cast<double>(zoom);
 
         double startX = std::fmod(ox, gpx);
         if (startX < 0) startX += gpx;
@@ -41,9 +41,9 @@ private:
         if (startY < 0) startY += gpx;
 
         const double worldPerPx = 1.0 / z;
-        const double wx0        = (startX - ox) * worldPerPx;
-        const double wy0        = (oy - startY) * worldPerPx;
-        const double worldStep  = gpx * worldPerPx;
+        const double wx0 = (startX - ox) * worldPerPx;
+        const double wy0 = (oy - startY) * worldPerPx;
+        const double worldStep = gpx * worldPerPx;
 
         return { W, H, gpx, startX, startY, wx0, wy0, worldStep };
     }
@@ -52,7 +52,7 @@ public:
     void init(sf::Vector2u size) {
         windowSize = size;
         offset = { size.x / 2.0f, size.y / 2.0f };
-        zoom     = std::clamp(zoom, kMinPxPerWorld, kMaxPxPerWorld);
+        zoom = std::clamp(zoom, kMinPxPerWorld, kMaxPxPerWorld);
     }
 
     void resize(sf::Vector2u size) {
@@ -80,17 +80,16 @@ public:
 
         if (const auto* scroll = event.getIf<sf::Event::MouseWheelScrolled>()) {
             constexpr float kStepPerDelta = 1.1f;
-            float           d             = std::clamp(scroll->delta, -30.f, 30.f);
-            float           mult          = std::pow(kStepPerDelta, d);
-            sf::Vector2f    mouse(static_cast<float>(scroll->position.x),
-                                  static_cast<float>(scroll->position.y));
+            float d = std::clamp(scroll->delta, -30.f, 30.f);
+            float mult = std::pow(kStepPerDelta, d);
+            sf::Vector2f mouse(static_cast<float>(scroll->position.x), static_cast<float>(scroll->position.y));
             float oldZ = zoom;
             float newZ = std::clamp(oldZ * mult, kMinPxPerWorld, kMaxPxPerWorld);
             if (newZ == oldZ)
                 return;
             float scale = newZ / oldZ;
-            offset      = mouse + (offset - mouse) * scale;
-            zoom        = newZ;
+            offset = mouse + (offset - mouse) * scale;
+            zoom = newZ;
         }
         if (const auto* press = event.getIf<sf::Event::MouseButtonPressed>()) {
             if (press->button == sf::Mouse::Button::Left) {
@@ -105,8 +104,7 @@ public:
         if (const auto* move = event.getIf<sf::Event::MouseMoved>()) {
             if (dragging) {
                 sf::Vector2i cur(move->position.x, move->position.y);
-                offset   += sf::Vector2f(static_cast<float>(cur.x - lastMouse.x),
-                                         static_cast<float>(cur.y - lastMouse.y));
+                offset   += sf::Vector2f(static_cast<float>(cur.x - lastMouse.x), static_cast<float>(cur.y - lastMouse.y));
                 lastMouse = cur;
             }
         }
@@ -116,7 +114,7 @@ public:
     void drawGrid(sf::RenderWindow& window) {
         const GridGeom g = gridGeom();
         sf::VertexArray lines(sf::PrimitiveType::Lines);
-        sf::Color       gridCol(55, 55, 55);
+        sf::Color gridCol(55, 55, 55);
 
         const double Wd = static_cast<double>(g.W);
         const double Hd = static_cast<double>(g.H);
@@ -138,17 +136,16 @@ public:
         }
 
         sf::Color axisCol(180, 180, 180);
-        lines.append({ {0,        offset.y}, axisCol });
-        lines.append({ {g.W,      offset.y}, axisCol });
-        lines.append({ {offset.x, 0},        axisCol });
-        lines.append({ {offset.x, g.H},    axisCol });
+        lines.append({ {0, offset.y}, axisCol });
+        lines.append({ {g.W, offset.y}, axisCol });
+        lines.append({ {offset.x, 0}, axisCol });
+        lines.append({ {offset.x, g.H}, axisCol });
 
         window.draw(lines);
     }
 
-    /// Вызывать после ImGui::SFML::Update (нужен активный кадр ImGui и шрифт по умолчанию).
     void drawGridLabels() {
-        const GridGeom g = gridGeom();
+        const GridGeom   g = gridGeom();
         ImDrawList*      dl = ImGui::GetBackgroundDrawList();
         const float      labelMargin = 6.f;
         const ImU32      col = IM_COL32(160, 160, 160, 255);
@@ -191,16 +188,12 @@ public:
         const float worldH = wMax.y - wMin.y;
         if (worldW <= 0 || worldH <= 0) return;
 
-        // Шаг сетки в мире так, чтобы на экране было ~sampleSpacingPx между точками;
-        // убран нижний порог 0.3 — он давал 2–3 гигантские стрелки при сильном zoom.
         constexpr float sampleSpacingPx = 11.f;
         constexpr int   maxSamplesAxis  = 80;
         constexpr float arrowLenPx      = 6.5f;
 
         float step = sampleSpacingPx / zoom;
-        const float stepFloor =
-            std::max(worldW / static_cast<float>(maxSamplesAxis),
-                     worldH / static_cast<float>(maxSamplesAxis));
+        const float stepFloor = std::max(worldW / static_cast<float>(maxSamplesAxis), worldH / static_cast<float>(maxSamplesAxis));
         step = std::max(step, stepFloor);
 
         const float minSpan = std::min(worldW, worldH);
@@ -236,20 +229,18 @@ public:
                 float nyf = static_cast<float>(fy) / len * al;
 
                 sf::Vector2f start = toScreen(wx, wy);
-                sf::Vector2f end   = toScreen(wx + static_cast<double>(nxf),
-                                               wy + static_cast<double>(nyf));
+                sf::Vector2f end = toScreen(wx + static_cast<double>(nxf), wy + static_cast<double>(nyf));
 
                 sf::Color col = speedColor(len);
-                lines.append({ start, col });
-                lines.append({ end,   col });
+                lines.append({start, col});
+                lines.append({end, col});
             }
         }
         window.draw(lines);
     }
 
     // ── Trajectory ──────────────────────────────────────────────────────────
-    void drawTrajectory(sf::RenderWindow& window,
-                        const std::vector<std::pair<double, double>>& path) {
+    void drawTrajectory(sf::RenderWindow& window, const std::vector<std::pair<double, double>>& path) {
         if (path.empty()) return;
 
         sf::VertexArray va(sf::PrimitiveType::LineStrip);
